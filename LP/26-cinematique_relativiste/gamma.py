@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-  Resonance : trace la norme des fonctions de transfert
-  en position et vitesse pour 5 valeurs de Q
+  Gamma : trace le facteur de Lorentz en fonction de la vitesse
 """
 
 import matplotlib.animation as animation
