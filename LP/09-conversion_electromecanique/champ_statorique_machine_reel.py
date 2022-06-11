@@ -139,7 +139,7 @@ def traceMoteurSynchrone (N, deltaTheta, triphasee, figure):
     figure.xaxis.set_visible (False)
     figure.yaxis.set_visible (False)
     figure.set_aspect ('equal')
-    figure.text (-.7, -3, r'$\theta_{max}=$'+f'{0 : 3.1f}'+'°', color='black', va="top", ha="left")
+    figure.text (-.7, -3, r'$\alpha_{max}=$'+f'{0 : 3.1f}'+'°', color='black', va="top", ha="left")
 
     # trace la machine
     traceMachine (2.9, 'grey', figure)
@@ -198,10 +198,10 @@ def traceVecteurChamp (t, r, l, triphasee, figure):
         texteAngle = f'{360 * t : 3.1f}'
     figure.arrow (base[0], base[1], tete[0], tete[1],
         shape='full', lw=1.3, length_includes_head=True, head_width=.3, color='midnightblue')
-    figure.texts[0].set_text (r'$\theta_{max}=$' + texteAngle + '°')
+    figure.texts[0].set_text (r'$\alpha_{max}=$' + texteAngle + '°')
 
-# trace le diagramme du champ
-def traceValeurChamp (figure):
+# initialise le diagramme du champ
+def initialiseDiagramme (figure):
     x = np.linspace (xmin, xmax, 150)
     figure.plot (x, 5*np.cos (x), 'darkorange')
     figure.plot (x, champTotal (x, 0, 1, 0, False), 'midnightblue')
@@ -219,7 +219,7 @@ def traceAxes (figure):
     # axe theta
     figure.arrow (xmin - taille, 0, xmax - xmin + 2*taille, 0,
         shape='full', lw=.75, length_includes_head=True, head_width=.25, color='black')
-    figure.text (xmax + taille, taille/2, r'$\theta$',
+    figure.text (xmax + taille, taille/2, r'$\alpha$',
         color='black', va="bottom", ha="right")
     # axe B
     figure.arrow (0, ymin - taille, 0, ymax - ymin + 3*taille,
@@ -266,7 +266,7 @@ def champTotal (theta, t, N, deltaTheta, triphasee):
 """
 Fonctions de mise à jour
 """
-# mise à jour des paramètres
+# mise à jour du système
 def miseAJour (val):
     N = choixNombreBobine.val
     deltaTheta = enRadian (180) / N
@@ -317,7 +317,7 @@ Partie principale
 """
 # trace les axes et défini le nombre de bobines
 traceAxes (diagramme)
-traceValeurChamp (diagramme)
+initialiseDiagramme (diagramme)
 miseAJour (0)
 
 # mise à jour interactive
