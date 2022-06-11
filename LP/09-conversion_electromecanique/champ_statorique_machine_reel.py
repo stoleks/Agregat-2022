@@ -22,28 +22,30 @@ Initialisation
 """
 # agancement de la fenêtre
 fenetre = plt.figure (constrained_layout=True, figsize=(8,5))
-grille = fenetre.add_gridspec (ncols=8, nrows=6)
-diagramme = fenetre.add_subplot (grille [0:5,0:5])
-synchrone = fenetre.add_subplot (grille [1:4,5:8])
+grille = fenetre.add_gridspec (ncols=10, nrows=8)
+synchrone = fenetre.add_subplot (grille [1:6,0:5])
+diagramme = fenetre.add_subplot (grille [1:6,5:10])
 plt.rcParams.update({'font.size': 18})
 
 # definition des bouttons réglables
 couleurAxe = 'white'
+taille = [1/3, 0.05]
+x = 0.08
+y = 0.925
+espacement = 0.06
 # choix du nombre de bobines
-bobines = plt.axes ([0.62, .95, .33, 0.03], facecolor=couleurAxe)
+bobines = plt.axes ([x, y, taille[0], taille[1]], facecolor=couleurAxe)
 choixNombreBobine = Slider (bobines, 'N  ', 1, 2*7 + 1, valinit=1, valstep=2)
 # évolution temporelle
-temps = plt.axes ([0.62, 0.9, .33, 0.03], facecolor=couleurAxe)
+temps = plt.axes ([x, y - espacement, taille[0], taille[1]], facecolor=couleurAxe)
 choixTemps = Slider (temps, '$t/T$  ', 0, 1, valinit=0, valstep=0.01)
 # choix mono ou triphasée
-monoPhasee = plt.axes ([0.6, 0.18, 0.25, 0.05])
+y = 0.15
+monoPhasee = plt.axes ([x, y, taille[0], taille[1]])
 choixPhase = Button (monoPhasee, 'Triphasée')
-# choix de tracer le champ dans l'entrefer
-champ = plt.axes ([0.6, 0.12, 0.25, 0.05])
-tracerChamp = Button (champ, 'Cacher champ entrefer')
 # choix de lancer l'animation
-animation = plt.axes ([0.86, 0.12, 0.11, 0.11])
-lancerAnimation = Button (animation, 'Lancer\n animation')
+animation = plt.axes ([x, y - espacement, taille[0], taille[1]])
+lancerAnimation = Button (animation, 'Lancer l\'animation')
 
 # coordonnées du diagramme
 xmin = -5
@@ -67,10 +69,9 @@ def enRadian (angle):
 
 # calcul l'angle de la n-ième bobine
 # n      : numéro de la bobine
-# theta0 : angle initial
 # N      : nombre de bobines
-def angleBobine (n, theta0, N):
-    return (n - (N - 1)/2) * theta0
+def angleBobine (n, deltaTheta, N):
+    return (n - (N - 1)/2) * deltaTheta
 
 
 """
@@ -79,26 +80,20 @@ Fonctions pour tracer le moteur
 # Pour tracer une encoche à bobine
 # r      : rayon rotor + entrefer
 # a      : taille encoche
-# theta  : angle de l'encoche (radian)
-# figure : figure où tracer l'encoche
-def traceEncoche (r, a, theta, figure):
+def traceEncoche (r, a, cosTheta, sinTheta, figure):
     # calcul position de l'encoche
-    cos = np.cos (theta)
-    sin = np.sin (theta)
     rc = r + a/2
-    encochePos = (rc*cos, rc*sin)
+    encochePos = (rc*cosTheta, rc*sinTheta)
     # dessine un cercle blanc
     encoche = patches.Circle (encochePos, radius=1.1*a, color='white', fill=True)
     figure.add_patch (encoche)
 
 # Pour tracer le fil d'une bobine entrant ou sortant
-def traceBobine (r, a, theta, sortant, couleur, figure):
+def traceBobine (r, a, cosTheta, sinTheta, sortant, couleur, figure):
     # dessine le fil
-    cos = np.cos (theta)
-    sin = np.sin (theta)
     rc = r + a/2
-    filPos = (rc*cos, rc*sin)
-    fil = patches.Circle (filPos, radius=a, color=couleur, linewidth=0.5, fill=False)
+    filPos = (rc*cosTheta, rc*sinTheta)
+    fil = patches.Circle (filPos, radius=a, color='black', linewidth=0.5, fill=False)
     figure.add_patch (fil)
     # dessine son sens
     if sortant :
@@ -109,11 +104,12 @@ def traceBobine (r, a, theta, sortant, couleur, figure):
       l = lMin + 3*a/4
       lMax = lMin + 7*a/4
       # trait vertical
-      croixV = [[lMin*cos, lMax*cos], [lMin*sin, lMax*sin]]
-      figure.plot (croixV[0], croixV[1], color=couleur, linewidth=0.5)
+      croixV = [[lMin*cosTheta, lMax*cosTheta], [lMin*sinTheta, lMax*sinTheta]]
+      figure.plot (croixV[0], croixV[1], color=couleur, linewidth=1.0)
       # trait horizontal
-      croixH = [[l*cos - 0.9*a*sin, l*cos + 0.9*a*sin], [l*sin + 0.9*a*cos, l*sin - 0.9*a*cos]]
-      figure.plot (croixH[0], croixH[1], color=couleur, linewidth=0.5)
+      croixH = [[l*cosTheta - 0.9*a*sinTheta, l*cosTheta + 0.9*a*sinTheta],
+          [l*sinTheta + 0.9*a*cosTheta, l*sinTheta - 0.9*a*cosTheta]]
+      figure.plot (croixH[0], croixH[1], color=couleur, linewidth=1.0)
 
 # pour tracer le stator et le rotor
 def traceMachine (r, couleur, figure):
@@ -128,13 +124,13 @@ def traceMachine (r, couleur, figure):
     figure.add_patch (rotor)
 
 # trace un bobinage
-def traceBobinage (r, a, i, theta0, N, decalage, sortant, couleur, figure):
-    theta = angleBobine (i, theta0, N) + enRadian (decalage)
-    traceEncoche (r, a, theta, figure)
-    traceBobine (r, a, theta, sortant, couleur, figure)
+def traceBobinage (r, a, i, deltaTheta, N, decalage, sortant, couleur, figure):
+    theta = angleBobine (i, deltaTheta, N) + enRadian (decalage)
+    traceEncoche (r, a, np.cos(theta), np.sin(theta), figure)
+    traceBobine (r, a, np.cos(theta), np.sin(theta), sortant, couleur, figure)
 
 # trace le moteur synchrone
-def traceMoteurSynchrone (N, theta0, triphasee, figure):
+def traceMoteurSynchrone (N, deltaTheta, triphasee, figure):
     figure.clear ()
     # Zone de tracé de la visualisation du train et du tunnel
     figure.set_xlim (-3, 3)
@@ -150,23 +146,23 @@ def traceMoteurSynchrone (N, theta0, triphasee, figure):
     r = 2.3
     decalage = 0.1
     a = decalage - 0.001*N
-    couleur='k'
+    couleur='dodgerblue'
     # premier jeu de bobine
     for i in range (0, N):
-        traceBobinage (r, a, i, theta0, N,  90, True, couleur, figure)
-        traceBobinage (r, a, i, theta0, N, 270, False, couleur, figure)
+        traceBobinage (r, a, i, deltaTheta, N,  90, True, couleur, figure)
+        traceBobinage (r, a, i, deltaTheta, N, 270, False, couleur, figure)
     # second et troisieme jeu de bobine
     if triphasee:
         # second jeu
-        couleur='r'
+        couleur='crimson'
         for i in range (0, N):
-            traceBobinage (r + 2.1*decalage, a, i, theta0, N, 210, True, couleur, figure)
-            traceBobinage (r + 2.1*decalage, a, i, theta0, N,  30, False, couleur, figure)
+            traceBobinage (r + 2.1*decalage, a, i, deltaTheta, N, 210, True, couleur, figure)
+            traceBobinage (r + 2.1*decalage, a, i, deltaTheta, N,  30, False, couleur, figure)
         # troisieme jeu
-        couleur='g'
+        couleur='limegreen'
         for i in range (0, N):
-            traceBobinage (r + 4.2*decalage, a, i, theta0, N, 330, True, couleur, figure)
-            traceBobinage (r + 4.2*decalage, a, i, theta0, N, 150, False, couleur, figure)
+            traceBobinage (r + 4.2*decalage, a, i, deltaTheta, N, 330, True, couleur, figure)
+            traceBobinage (r + 4.2*decalage, a, i, deltaTheta, N, 150, False, couleur, figure)
 
 
 """
@@ -193,24 +189,22 @@ def traceVecteurChamp (t, r, l, triphasee, figure):
         figure.arrow (ri*cosi, ri*sini, l*cost*cosi, l*cost*sini,
             shape='full', lw=.75, length_includes_head=False, head_width=.05, color='black')
     # trace le champ total et affiche son angle
-    baseX = -r/2 * np.cos (deuxPi * t)
-    teteX = r * np.cos (deuxPi * t)
-    baseY = 0
-    teteY = 0
+    base = [-r/2 * np.cos (deuxPi * t), 0]
+    tete = [r * np.cos (deuxPi * t), 0]
     texteAngle = f'{(1 - np.sign (np.cos (deuxPi*t))) * 90 : 3.1f}'
     if triphasee:
-        baseY = -r/2 * np.sin (deuxPi * t)
-        teteY = r * np.sin (deuxPi * t)
+        base[1] = -r/2 * np.sin (deuxPi * t)
+        tete[1] = r * np.sin (deuxPi * t)
         texteAngle = f'{360 * t : 3.1f}'
-    figure.arrow (baseX, baseY, teteX, teteY,
-        shape='full', lw=1.3, length_includes_head=True, head_width=.3, color='blue')
+    figure.arrow (base[0], base[1], tete[0], tete[1],
+        shape='full', lw=1.3, length_includes_head=True, head_width=.3, color='midnightblue')
     figure.texts[0].set_text (r'$\theta_{max}=$' + texteAngle + '°')
 
 # trace le diagramme du champ
-def traceValeurChamp (N, theta0, t, figure):
-    x = np.linspace (xmin, xmax, 300)
-    figure.plot (x, 5*np.cos(x), 'r-')
-    figure.plot (x, champTotal (x, theta0, t, N), 'b-')
+def traceValeurChamp (figure):
+    x = np.linspace (xmin, xmax, 150)
+    figure.plot (x, 5*np.cos (x), 'darkorange')
+    figure.plot (x, champTotal (x, 0, 1, 0, False), 'midnightblue')
 
 # trace les axes du diagrammes B(theta)
 def traceAxes (figure):
@@ -239,28 +233,33 @@ Fonctions de calcul des champs
 """
 # détermination du signe du champ
 def positif (d):
-    if d < -3.5 or d > -2.5 and d < -1.5 or d > -0.5 and d < 0.5  or d > 1.5 and d < 2.5  or d > 3.5:
-        return True
-    return False
-
+    if (d < -2):
+        d = d + 2
+    if (d > 2):
+        d = d - 2
+    # B > 0 si dans [-π/2, π/2] ou [-2π, -3π/2] U [3π/2, 2π]
+    return (d < -1.5 or d > -0.5) and (d < 0.5 or d > 1.5)
 
 # calcul du champ d'une bobine
-def champ (theta, theta0, t):
-    deuxPi = 2*np.pi
-    x = theta - theta0
-    for i in range (0, 300):
+def champ (theta, angle, t, triphasee):
+    Bmax = 5
+    x = theta - angle - 2*np.pi*t
+    if not triphasee:
+        Bmax = 5*np.cos (2*np.pi*t)
+        x = x + 2*np.pi*t
+    for i in range (0, 150):
         if positif (x[i] / np.pi):
-            x[i] = 5*np.cos (deuxPi*t)
+            x[i] = Bmax
         else:
-            x[i] = -5*np.cos (deuxPi*t)
+            x[i] = -Bmax
     return x
 
 # calcul du champ total
-def champTotal (theta, theta0, t, N):
+def champTotal (theta, t, N, deltaTheta, triphasee):
     val = 0
     for i in range (0, N):
-        angle = angleBobine (i, theta0, N)
-        val = val + champ (theta, angle, t) / N
+        angle = angleBobine (i, deltaTheta, N)
+        val = val + champ (theta, angle, t, triphasee) / N
     return val
 
 
@@ -270,23 +269,26 @@ Fonctions de mise à jour
 # mise à jour des paramètres
 def miseAJour (val):
     N = choixNombreBobine.val
-    theta0 = enRadian (180) / (N + 1)
-    if N == 1:
-        theta0 = 0
+    deltaTheta = enRadian (180) / N
     triphasee = choixPhase.label.get_text () == 'Monophasée'
-    traceMoteurSynchrone (N, theta0, triphasee, synchrone)
-    if tracerChamp.label.get_text () == 'Cacher champ entrefer':
-        t = choixTemps.val
-        traceVecteurChamp (t, 2, 0.4, triphasee, synchrone)
-    x = np.linspace (xmin, xmax, 300)
-    if not triphasee:
-        diagramme.lines[1].set_data (x, champTotal (x, theta0, 0, N))
+    traceMoteurSynchrone (N, deltaTheta, triphasee, synchrone)
+    t = choixTemps.val
+    traceVecteurChamp (t, 2, 0.4, triphasee, synchrone)
+    # met à jour les champs
+    x = np.linspace (xmin, xmax, 150)
+    champSinus = 0
+    if triphasee:
+        champSinus = 5*np.cos (x - 2*np.pi*t)
+    else:
+        champSinus = 5*np.cos (x)*np.cos (2*np.pi*t)
+    diagramme.lines[0].set_data (x, champSinus)
+    diagramme.lines[1].set_data (x, champTotal (x, t, N, deltaTheta, triphasee))
 
-# anime
+# animation
 def animer (i):
-    deltaT = i / 24
+    deltaT = i / 30
     t = deltaT - np.floor (deltaT)
-    if lancerAnimation.label.get_text() == 'Arrêter\n animation':
+    if lancerAnimation.label.get_text() == 'Arrêter l\'animation':
         choixTemps.set_val (t)
         miseAJour (0)
 
@@ -296,28 +298,17 @@ Fonction d'interface
 """
 def choixMonoOuTriphasee (val):
     if choixPhase.label.get_text() == 'Triphasée':
-        diagramme.lines[1].remove ()
         choixPhase.label.set_text ('Monophasée')
     else:
         diagramme.plot ([0,0], [0,0], 'b-')
         choixPhase.label.set_text ('Triphasée')
-    choixNombreBobine.set_val (1)
-    miseAJour (0)
-
-def choixTracerChamp (val):
-    if tracerChamp.label.get_text () == 'Montrer champ entrefer':
-        tracerChamp.label.set_text ('Cacher champ entrefer')
-    else:
-        tracerChamp.label.set_text ('Montrer champ entrefer')
-    choixNombreBobine.set_val (1)
     miseAJour (0)
 
 def choixLancerAnimation (val):
-    if lancerAnimation.label.get_text() == 'Lancer\n animation':
-        lancerAnimation.label.set_text ('Arrêter\n animation')
+    if lancerAnimation.label.get_text() == 'Lancer l\'animation':
+        lancerAnimation.label.set_text ('Arrêter l\'animation')
     else:
-        lancerAnimation.label.set_text ('Lancer\n animation')
-    choixNombreBobine.set_val (1)
+        lancerAnimation.label.set_text ('Lancer l\'animation')
     miseAJour (0)
 
 
@@ -326,24 +317,16 @@ Partie principale
 """
 # trace les axes et défini le nombre de bobines
 traceAxes (diagramme)
-N = choixNombreBobine.val
-t = choixTemps.val
-theta0 = 2.63 / (N + 1)
-if N == 1:
-    theta0=0
-triphasee = choixPhase.label.get_text () == 'Monophasée'
-traceMoteurSynchrone (N, theta0, triphasee, synchrone)
-traceVecteurChamp (t, 2, 0.4, triphasee, synchrone)
-traceValeurChamp (N, theta0, t, diagramme)
+traceValeurChamp (diagramme)
+miseAJour (0)
 
 # mise à jour interactive
-choixNombreBobine.on_changed (miseAJour)
 choixTemps.on_changed (miseAJour)
+choixNombreBobine.on_changed (miseAJour)
 choixPhase.on_clicked (choixMonoOuTriphasee)
-tracerChamp.on_clicked (choixTracerChamp)
 lancerAnimation.on_clicked (choixLancerAnimation)
 
 # lance l'animation
-ani = anim.FuncAnimation (fenetre, animer, 100)
+ani = anim.FuncAnimation (fenetre, animer, 60, interval = 16)
 
 plt.show()
