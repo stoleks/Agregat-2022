@@ -172,7 +172,7 @@ Fonction pour tracer le champ
 # r : taille de la machine
 # l : longueur des vecteurs
 def traceVecteurChamp (t, r, l, triphasee, figure):
-    # trace le champ des bobine
+    # trace le champ dans l'entrefer
     deuxPi = 2*np.pi
     nombreVecteurs = 16
     for i in range (0, nombreVecteurs):
@@ -187,7 +187,7 @@ def traceVecteurChamp (t, r, l, triphasee, figure):
             sint = np.sin (angle) * np.cos (deuxPi*t)
         ri = 3*r/4
         figure.arrow (ri*cosi, ri*sini, l*cost*cosi, l*cost*sini,
-            shape='full', lw=.75, length_includes_head=False, head_width=.05, color='black')
+            shape='full', lw=1.0, length_includes_head=False, head_width=.1, color='black')
     # trace le champ total et affiche son angle
     base = [-r/2 * np.cos (deuxPi * t), 0]
     tete = [r * np.cos (deuxPi * t), 0]
@@ -273,7 +273,7 @@ def miseAJour (val):
     triphasee = choixPhase.label.get_text () == 'Monophasée'
     traceMoteurSynchrone (N, deltaTheta, triphasee, synchrone)
     t = choixTemps.val
-    traceVecteurChamp (t, 2, 0.4, triphasee, synchrone)
+    traceVecteurChamp (t, 2.7, 0.4, triphasee, synchrone)
     # met à jour les champs
     x = np.linspace (xmin, xmax, 150)
     champSinus = 0
