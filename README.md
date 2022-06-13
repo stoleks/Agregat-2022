@@ -16,3 +16,5 @@ Notes et images pour les leçons de physique et les leçons de chimies. Dossier 
 [femto](https://femto-physique.fr/index.html)
 
 [conversion de puissance électromécanique (poly)](https://www.ferrarithierry.fr/file/si1542318/download/cours-fi24087519.pdf)
+
+[transmission paquet d'onde sur une barrière](https://www.youtube.com/watch?v=JDA9ynX6j9A)
