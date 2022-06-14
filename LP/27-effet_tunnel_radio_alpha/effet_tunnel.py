@@ -22,12 +22,12 @@ def barriere (x, xCentre, largeur, amplitude):
 
 # operateur d'évolution
 def operateurEvolution (I, H, dt):
-    return (I - 1j*dt/2. * H)
+    return (I - 1j*dt/2 * H)
 
 # trace la barrière
 def traceBarriere (V, V0):
     plt.title ("Propagation d'un paquet d'onde gaussien")
-    plt.plot (x, potentiel / V0, label='$V(x)$')
+    plt.plot (x, V / V0, label='$V(x)$')
     plt.xlabel ("$x$ [unité arbitraire]")
     plt.ylabel ("$V(x) / V_0$")
     #plt.grid ()
