@@ -1,0 +1,24 @@
+Timing :
+1 min intro + parcours
+2 min par année d'enseignement                       -> 5 min
+4 min 30 pour l'activité                             -> 9 min 30
+3 min 30 nucléation jusqu'à la théorie classique     -> 13 min
+au moins 7 min pour présenter système et résultats   -> 20 min
+1 min conclusion                                     -> 21 min
+
+Maille hexagonale :
+V = a^2 c sin (\gamma)
+a(r) : tangence sommet (\sqrt (2) a = 2 r)
+c(a) : tetraèdre atome central + pythagore : (c/2)^2 + (a/\sqrt (3))^2 = a^2
+N_maille = 1 + 4/6 + 4/12 = 2
+\tau = \pi / (3 \sqrt (2)) = 0.74
+a = paramètre l_1 modèle TIP4P/2005
+\rho = N_maille M (H2O) / (N_A V_maille)
+\tau_hexa = 0.34
+
+Thermostat :
+Nosé-Hoover ajout force sur particule i : m_Q v_Q v_i avec dv_Q = (T - T_0) dt
+
+Barostat :
+Parinello-Rahman ajout force pression : P_ii V + W_ij d b_ij / dt 
+(b_ij = vecteurs boite de simulation représentés par une matrice)
