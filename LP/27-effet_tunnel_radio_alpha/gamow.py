@@ -21,16 +21,24 @@ def barriere (x, xCentre, largeur, amplitude):
     carree = np.exp (-np.power ((x - xCentre) / largeur, 128))
     return amplitude * carree
 
+# barrière gamow
+def barriereGamow (x, xCentre, amplitude):
+    coulomb = (1 + np.sign (x - xCentre)) / x**2
+    forte = 10 * (1 - np.sign (x - xCentre))
+    return amplitude * (coulomb - forte)
+
 # operateur d'évolution
 def operateurEvolution (I, H, dt):
-    return (I - 1j*dt/2 * H)
+    return (I - 1j*dt/2. * H)
 
 # trace la barrière
 def traceBarriere (V, V0):
-    plt.title ("Propagation d'un paquet d'onde gaussien")
-    plt.plot (x, V / V0, label='$V(x)$')
+    VMax = np.max (V)
+    plt.title ("Propagation d'un paquet d'onde gaussien dans un potentiel de Gamow")
+    plt.plot (x, V / V0 / 10, label='$V(x)$')
     plt.xlabel ("$x$ [unité arbitraire]")
     plt.ylabel ("$V(x) / V_0$")
+
 
 """
 Initialisation
@@ -39,7 +47,7 @@ Initialisation
 n = 1000
 dx = 1/n
 xMax = 0.5
-x = np.linspace (-xMax, xMax, n)
+x = np.linspace (0.01, 2*xMax, n)
 
 # paramètres temporels
 dt = 1e-5
@@ -47,10 +55,9 @@ T = 0.004
 pasDeTemps = int (T / dt)
 
 # définition de la barrière
-V0 = 4.55e5
-centreV = 0.0
-largeurV = 0.02
-potentiel = barriere (x, centreV, largeurV, V0)
+V0 = 1.1e4
+centreV = 0.3
+potentiel = barriereGamow (x, centreV, V0)
 fig = plt.figure ()
 traceBarriere (potentiel, V0)
 
@@ -61,13 +68,12 @@ H = Ec + V
 
 # onde initiale
 k = 1e3
-x0 = -0.2
+x0 = 0.1
 largeur = 0.05
 onde = paquetOndeIncident (x, x0, largeur, k)
 # norme de l'onde
 normeOnde = np.zeros ((pasDeTemps, len (onde)))
 normeOnde[0,:] = abs (onde)**2
-plt.ylim (-0.1, 2)
 
 
 """
@@ -93,5 +99,4 @@ def animate (i):
     return line,
 plt.legend (loc='best')
 anim = animation.FuncAnimation(fig, animate, frames=pasDeTemps, interval=10, blit=True, repeat=True)
-
 plt.show()
