@@ -74,7 +74,7 @@ def traceHarmonique3D (n, l, m):
       maxi = 0.1
     fcolors = (psi - mini) / (maxi - mini)
     # trace les harmoniques
-    fig = plt.figure (figsize = (20, 16))
+    fig = plt.figure (figsize = (80, 64))
     ax = fig.add_subplot (111, projection='3d')
     ax.plot_surface (x, y, z, facecolors=cm.seismic(fcolors), alpha=0.3)
     # trace la projection sur les axes
@@ -92,12 +92,12 @@ def traceHarmonique3D (n, l, m):
 
 
 # trace les fonctions d'ondes pour n = 0, ..., 5
-nMin = 0
+nMin = 4
 nMax = 5
 for n in range (nMin, nMax):
     for l in range (n):
         for m in np.linspace (-l, l, 2*l + 1, dtype=(int)):
             traceDensitePresence (n, l, m)
             plt.show ()
-            traceHarmonique3D (n, l, m)
-            plt.show ()
+            # traceHarmonique3D (n, l, m)
+            # plt.show ()
